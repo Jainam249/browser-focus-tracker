@@ -8,3 +8,7 @@ Thumbs.db
 # MkDocs build output
 site/
 .venv/
+
+# Chrome Web Store packaging artifacts
+FocusPulse-v1.0.1.zip
+extension-package/

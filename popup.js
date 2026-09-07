@@ -29,7 +29,7 @@ function updateTopSites(stats) {
 
   const entries = Object.entries(stats?.sites || {})
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 6);
+    .slice(0, 5);
 
   container.classList.toggle("is-empty", entries.length === 0);
 
