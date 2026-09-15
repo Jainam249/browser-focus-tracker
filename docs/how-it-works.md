@@ -90,3 +90,125 @@ score = 100
 
 final score = clamped to 0–100 and rounded
 ```
+
+### Grades and focus zones
+
+The final score is also shown as a letter grade and a focus zone.
+
+| Score  | Grade | Focus zone         |
+| ------ | ----- | ------------------ |
+| 90–100 | **A** | Highly focused     |
+| 80–89  | **B** | Highly focused     |
+| 65–79  | **C** | Moderately focused |
+| 50–64  | **D** | Moderately focused |
+| 0–49   | **D** | Distracted         |
+
+The focus zone gives a simple interpretation of the score, while the letter
+grade provides a more detailed classification.
+
+### Why did my score change?
+
+Focus Pulse makes the score easier to understand by showing a breakdown of
+where points were lost.
+
+The dashboard shows:
+
+- **Starting score** — every day begins at 100.
+- **Tab switching** — each tab switch reduces the score by 1.5 points.
+- **Short visits** — each qualifying short visit reduces the score by 3 points.
+- **Website variety** — visiting more than 15 distinct sites applies a
+  10-point penalty.
+- **Today's focus score** — the resulting score after the penalties are applied
+  and the value is clamped between 0 and 100.
+
+This breakdown is intended to make the score transparent rather than presenting
+it as an unexplained number.
+
+### Your Personal Baseline
+
+After enough daily data has been collected, Focus Pulse calculates a personal
+baseline using up to the previous seven days of focus scores.
+
+At least three previous days are required before a baseline is shown. This
+prevents the comparison from being based on too little information.
+
+The dashboard compares today's score with your usual score and shows whether
+you are:
+
+- Above your usual focus
+- Below your usual focus
+- Around your usual focus
+
+The personal baseline is calculated entirely from your locally stored daily
+statistics.
+
+### Focus Insight
+
+Focus Pulse also provides a short **Focus Insight** based on the day's
+browsing statistics.
+
+The insight can highlight patterns such as:
+
+- Frequent tab switching
+- Several short visits
+- A large number of different websites
+- A score significantly above or below your personal baseline
+- A generally strong or steady focus score
+
+The insight is intended as a lightweight suggestion, not as a measurement of
+your actual productivity or mental attention.
+
+For example, a high number of tab switches may result in a suggestion to keep
+fewer active tabs. A score above your personal baseline may result in a positive
+message encouraging you to continue the browsing routine that worked well.
+
+These insights are generated locally and do not require your browsing data to
+be sent anywhere.
+
+### Limitations of the score
+
+The focus score is a **v1 heuristic**, not a scientific measurement of
+attention, productivity, or concentration.
+
+The score measures observable browsing behaviour such as tab switching,
+short visits, and website variety. It cannot determine whether you are
+actually focused on a task.
+
+For example, reading a long document without switching tabs may produce a high
+score even though Focus Pulse cannot know whether you were paying attention.
+Similarly, switching tabs frequently may be completely reasonable when a task
+requires research.
+
+The personal baseline and Focus Insight provide additional context, but they
+do not change this fundamental limitation.
+
+The formula may evolve in future versions as Focus Pulse develops more
+meaningful ways to represent browsing behaviour.
+
+## Where the data lives
+
+Each day is stored as a single small record in `chrome.storage.local`:
+
+| Field         | Contents                                |
+| ------------- | --------------------------------------- |
+| `sites`       | Hostname → milliseconds of focused time |
+| `switches`    | Number of tab switches                  |
+| `shortVisits` | Number of sessions under 10 seconds     |
+| `maxTabs`     | Highest simultaneous tab count that day |
+
+Alongside these sits the in-progress session state — the current hostname and
+when its session started.
+
+The daily records are used to calculate the focus score, 7-day trend, personal
+baseline, and Focus Insight.
+
+The `maxTabs` value is tracked for informational purposes but is **not currently
+used directly in the focus-score formula**.
+
+Because several listeners can fire at once — for example, a tab switch, tab
+close, and alarm — read-modify-write operations on the daily record are
+serialised through a queue. This prevents concurrent updates from overwriting
+each other and losing recorded activity.
+
+Nothing here is transmitted anywhere. See [Privacy](../privacy/) for the full
+statement.
