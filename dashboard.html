@@ -48,6 +48,88 @@
           <p class="empty-note" id="emptyNote">
             No signal yet today — browse a bit, then check back.
           </p>
+          <div class="score-breakdown" id="scoreBreakdown">
+            <div class="breakdown-header">
+              <h3>Why did my score change?</h3>
+              <span id="breakdownFinalScore">--</span>
+            </div>
+
+            <div class="breakdown-row">
+              <span>Starting score</span>
+              <strong id="startingScore">100</strong>
+            </div>
+
+            <div class="breakdown-row">
+              <span>Tab switching</span>
+              <strong id="switchPenalty">-0</strong>
+            </div>
+
+            <div class="breakdown-row">
+              <span>Short visits</span>
+              <strong id="shortVisitPenalty">-0</strong>
+            </div>
+
+            <div class="breakdown-row">
+              <span>Website variety</span>
+              <strong id="sitePenalty">-0</strong>
+            </div>
+
+            <div class="breakdown-total">
+              <span>Today's focus score</span>
+              <strong id="breakdownScore">--/100</strong>
+            </div>
+          </div>
+          <!-- Personal Baseline -->
+
+          <div class="personal-baseline" id="personalBaseline">
+            <div class="baseline-header">
+              <h3>Your Personal Baseline</h3>
+              <p class="baseline-description">Based on your previous 7 days</p>
+            </div>
+
+            <div id="baselineContent">
+              <div class="baseline-stats">
+                <div class="baseline-stat">
+                  <span>Your usual</span>
+                  <strong id="baselineValue">--</strong>
+                </div>
+
+                <div class="baseline-stat">
+                  <span>Today</span>
+                  <strong id="baselineToday">--</strong>
+                </div>
+              </div>
+
+              <div class="baseline-delta" id="baselineDelta">--</div>
+
+              <div class="baseline-percent" id="baselinePercent">--</div>
+            </div>
+
+            <div
+              class="baseline-empty"
+              id="baselineEmpty"
+              style="display: none"
+            >
+              <p>
+                Keep using FocusPulse to build your personal baseline. More data
+                will make this comparison meaningful.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="focus-insight" id="focusInsight">
+          <div class="focus-insight-header">
+            <h3>Focus Insight</h3>
+          </div>
+
+          <div class="focus-insight-content">
+            <h4 id="focusInsightTitle">--</h4>
+
+            <p id="focusInsightMessage">
+              Keep using FocusPulse to receive personalized focus insights.
+            </p>
+          </div>
         </div>
 
         <dl class="readouts">
@@ -55,17 +137,35 @@
             <dt>Browsing time</dt>
             <dd id="browsingTime">--</dd>
           </div>
+
           <div class="readout">
             <dt>Tab switches</dt>
             <dd id="switches">--</dd>
           </div>
+
           <div class="readout">
             <dt>Sites visited</dt>
             <dd id="siteCount">--</dd>
           </div>
+
           <div class="readout">
             <dt>Peak open tabs</dt>
             <dd id="maxTabs">--</dd>
+          </div>
+
+          <div class="readout">
+            <dt>Longest session</dt>
+            <dd id="longestSession">--</dd>
+          </div>
+
+          <div class="readout">
+            <dt>Average session</dt>
+            <dd id="averageSession">--</dd>
+          </div>
+
+          <div class="readout">
+            <dt>Grade</dt>
+            <dd id="productivityGrade">--</dd>
           </div>
         </dl>
       </section>
@@ -121,27 +221,7 @@
         <p class="empty-note" id="logEmptyNote">Nothing logged yet.</p>
       </section>
 
-      <section class="panel panel--split">
-        <div id="insightsBlock">
-          <h2>Insights</h2>
-          <p class="panel-sub">Today</p>
-          <dl class="readouts">
-            <div class="readout">
-              <dt>Longest session</dt>
-              <dd id="longestSession">--</dd>
-            </div>
-            <div class="readout">
-              <dt>Average session</dt>
-              <dd id="averageSession">--</dd>
-            </div>
-            <div class="readout">
-              <dt>Grade</dt>
-              <dd id="productivityGrade">--</dd>
-            </div>
-          </dl>
-          <p class="tip" id="productivityTip">--</p>
-        </div>
-
+      <section class="panel">
         <div id="topSitesBlock">
           <h2>Top sites</h2>
           <p class="panel-sub">Today</p>

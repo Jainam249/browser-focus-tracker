@@ -3,6 +3,9 @@ import {
   formatTime,
   calculateTotalTime,
   calculateFocusScore,
+  calculateFocusScoreBreakdown,
+  calculatePersonalBaseline,
+  generateFocusInsight,
   zoneForScore,
   ZONE_LABEL,
   needleAngle,
@@ -30,6 +33,46 @@ function updateGauge(score) {
 /* -----------------------------
    Today's readouts
 ------------------------------*/
+
+function updateScoreBreakdown(stats) {
+  const breakdown = calculateFocusScoreBreakdown(stats);
+
+  const startingScore = document.getElementById("startingScore");
+  const switchPenalty = document.getElementById("switchPenalty");
+  const shortVisitPenalty = document.getElementById("shortVisitPenalty");
+  const sitePenalty = document.getElementById("sitePenalty");
+  const breakdownFinalScore = document.getElementById("breakdownFinalScore");
+  const breakdownScore = document.getElementById("breakdownScore");
+
+  if (startingScore) {
+    startingScore.textContent = breakdown.startingScore;
+  }
+
+  if (switchPenalty) {
+    switchPenalty.textContent =
+      breakdown.switchPenalty > 0 ? `-${breakdown.switchPenalty}` : "-0";
+  }
+
+  if (shortVisitPenalty) {
+    shortVisitPenalty.textContent =
+      breakdown.shortVisitPenalty > 0
+        ? `-${breakdown.shortVisitPenalty}`
+        : "-0";
+  }
+
+  if (sitePenalty) {
+    sitePenalty.textContent =
+      breakdown.sitePenalty > 0 ? `-${breakdown.sitePenalty}` : "-0";
+  }
+
+  if (breakdownFinalScore) {
+    breakdownFinalScore.textContent = breakdown.finalScore;
+  }
+
+  if (breakdownScore) {
+    breakdownScore.textContent = `${breakdown.finalScore}/100`;
+  }
+}
 
 function updateTodayStats(stats) {
   const total = calculateTotalTime(stats.sites);
@@ -294,10 +337,135 @@ function updateHistoryTable(dailyStats) {
 }
 
 /* -----------------------------
-   Today's insights
+   Personal baseline
 ------------------------------*/
 
-function updateInsights(stats) {
+function updatePersonalBaseline(dailyStats, today) {
+  const baseline = calculatePersonalBaseline(dailyStats, today);
+
+  const baselineValue = document.getElementById("baselineValue");
+  const baselineToday = document.getElementById("baselineToday");
+  const baselineDelta = document.getElementById("baselineDelta");
+  const baselinePercent = document.getElementById("baselinePercent");
+  const baselineEmpty = document.getElementById("baselineEmpty");
+
+  if (!baseline) {
+    if (baselineValue) {
+      baselineValue.textContent = "";
+    }
+
+    if (baselineToday) {
+      baselineToday.textContent = "";
+    }
+
+    if (baselineDelta) {
+      baselineDelta.textContent = "";
+    }
+
+    if (baselinePercent) {
+      baselinePercent.textContent = "";
+    }
+
+    if (baselineEmpty) {
+      baselineEmpty.style.display = "";
+    }
+
+    const content = document.getElementById("baselineContent");
+
+    if (content) {
+      content.style.display = "none";
+    }
+
+    return;
+  }
+
+  const todayStats = dailyStats[today];
+
+  if (!todayStats) {
+    return;
+  }
+
+  const todayScore = calculateFocusScore(todayStats);
+  const delta = todayScore - baseline;
+
+  const percent =
+    baseline > 0 ? Math.round((Math.abs(delta) / baseline) * 100) : 0;
+
+  if (baselineValue) {
+    baselineValue.textContent = baseline;
+  }
+
+  if (baselineToday) {
+    baselineToday.textContent = todayScore;
+  }
+
+  if (baselineDelta) {
+    if (delta > 0) {
+      baselineDelta.textContent = `↑ ${delta} points`;
+    } else if (delta < 0) {
+      baselineDelta.textContent = `↓ ${Math.abs(delta)} points`;
+    } else {
+      baselineDelta.textContent = "→ Same as usual";
+    }
+  }
+
+  if (baselinePercent) {
+    if (delta > 0) {
+      baselinePercent.textContent = `${percent}% better than usual`;
+    } else if (delta < 0) {
+      baselinePercent.textContent = `${percent}% below your usual`;
+    } else {
+      baselinePercent.textContent = "Right around your usual";
+    }
+  }
+
+  if (baselineEmpty) {
+    baselineEmpty.style.display = "none";
+  }
+
+  const content = document.getElementById("baselineContent");
+
+  if (content) {
+    content.style.display = "";
+  }
+}
+
+/* -----------------------------
+   Focus insights
+------------------------------*/
+
+function updateFocusInsight(dailyStats, today) {
+  const stats = dailyStats[today];
+
+  const titleElement = document.getElementById("focusInsightTitle");
+  const messageElement = document.getElementById("focusInsightMessage");
+
+  if (!stats) {
+    if (titleElement) {
+      titleElement.textContent = "Start your focus journey";
+    }
+
+    if (messageElement) {
+      messageElement.textContent =
+        "Keep using FocusPulse to receive personalized focus insights.";
+    }
+
+    return;
+  }
+
+  const baseline = calculatePersonalBaseline(dailyStats, today);
+  const insight = generateFocusInsight(stats, baseline);
+
+  if (titleElement) {
+    titleElement.textContent = insight.title;
+  }
+
+  if (messageElement) {
+    messageElement.textContent = insight.message;
+  }
+}
+
+function updateTodayMetrics(stats) {
   const totalTime = calculateTotalTime(stats.sites);
 
   const sessions = (stats.switches || 0) + 1;
@@ -320,33 +488,22 @@ function updateInsights(stats) {
 
   document.getElementById("productivityGrade").textContent =
     getGradeLetter(score);
-
-  let tip = "Great work today!";
-
-  if (stats.switches > 80) {
-    tip = "Try reducing frequent tab switching.";
-  } else if (Object.keys(stats.sites).length > 15) {
-    tip = "Too many websites visited today.";
-  } else if (score >= 90) {
-    tip = "Excellent focus! Keep this routine.";
-  } else if (score < 60) {
-    tip = "Consider using fewer tabs for deep work.";
-  }
-
-  document.getElementById("productivityTip").textContent = tip;
 }
 
 /* -----------------------------
    Weekly report (downloadable summary)
 
-   Reuses the same "longest/average session" approximation the
-   Insights card uses for a single day, just applied across the
-   week's combined totals: there's no per-session record kept
-   in storage (only cumulative time per site per day), so "top
-   site's total time" stands in for "longest session" and
+   Reuses the same "longest/average session" approximation
+   used by updateTodayMetrics() for a single day, just applied
+   across the week's combined totals.
+
+   There is no per-session record kept in storage (only
+   cumulative time per site per day), so "top site's total
+   time" stands in for "longest session" and
    "total time / (switches + 1)" stands in for "average
-   session" - an estimate, not an exact session log, same as
-   in updateInsights above.
+   session".
+
+   These are estimates, not exact session logs.
 ------------------------------*/
 
 function calculateWeeklyTopSite(dailyStats) {
@@ -470,19 +627,20 @@ async function loadDashboard() {
 
     const readingSection = document.getElementById("readingSection");
 
-    const insightsBlock = document.getElementById("insightsBlock");
-
     const topSitesBlock = document.getElementById("topSitesBlock");
 
     if (stats) {
       readingSection.classList.remove("is-empty");
 
-      updateGauge(calculateFocusScore(stats));
+      const scoreBreakdown = calculateFocusScoreBreakdown(stats);
+      updateGauge(scoreBreakdown.finalScore);
+      updateScoreBreakdown(stats);
       updateTodayStats(stats);
       updateTopSites(stats);
-      updateInsights(stats);
+      updateTodayMetrics(stats);
+      updatePersonalBaseline(dailyStats, today);
+      updateFocusInsight(dailyStats, today);
 
-      insightsBlock.style.display = "";
       topSitesBlock.style.display = "";
     } else {
       readingSection.classList.add("is-empty");
@@ -491,7 +649,6 @@ async function loadDashboard() {
       // that only make sense with today's data, but
       // keep weekly signal / log / report visible below
       // since they can still show past days.
-      insightsBlock.style.display = "none";
       topSitesBlock.style.display = "none";
     }
 

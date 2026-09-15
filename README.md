@@ -12,7 +12,7 @@ Focus Pulse is designed to help users become more aware of their browsing behavi
 
 Unlike cloud-based productivity tools, this extension stores all browsing statistics locally using the Chrome Storage API. No personal browsing data is sent to external servers.
 
-The extension monitors website usage, calculates a daily focus score, provides productivity insights, and displays trends through an interactive dashboard.
+The extension monitors website usage, calculates a daily focus score, explains how the score was calculated, compares today's performance with the user's personal baseline, and provides actionable focus insights through an interactive dashboard.
 
 ---
 
@@ -29,6 +29,9 @@ The extension monitors website usage, calculates a daily focus score, provides p
 ### 🎯 Focus Analysis
 
 - Daily Focus Score
+- Transparent score breakdown showing why points were deducted
+- Personal Baseline based on previous 7 days
+- Comparison between today's score and personal baseline
 - Productivity Grade (A–D)
 - Focus Zone classification
 - Longest browsing session
@@ -41,7 +44,9 @@ The extension monitors website usage, calculates a daily focus score, provides p
 - 7-day activity history
 - Best and worst browsing days
 - Top visited websites
-- Productivity insights
+- Foucs Insight recommendations
+- "Why did my score change?" score breakdown
+- Personal Baseline comparison
 
 ### 📁 Data Export
 
@@ -124,7 +129,7 @@ your toolbar. Chrome keeps the extension updated automatically.
 
 ## Load unpacked (development)
 
-There is no build step — the repository *is* the extension.
+There is no build step — the repository _is_ the extension.
 
 1. Clone this repository
 
@@ -161,20 +166,61 @@ It records:
 - Browsing sessions
 - Daily statistics
 
-Using this information, the extension calculates a Focus Score and generates productivity insights displayed in both the popup and the analytics dashboard.
+Using this information, the extension calculates a Focus Score. The dashboard then explains the score through a transparent score breakdown, compares it with the user's personal baseline when enough historical data is available, and generates a Focus Insight with a simple actionable recommendation.
 
 ---
 
 # 📊 Focus Score
 
-The Focus Score is calculated using browsing behavior, including:
+Focus Pulse uses a simple, transparent heuristic to calculate the daily Focus Score.
 
-- Time spent browsing
-- Number of tab switches
-- Number of short browsing sessions
-- Browsing consistency
+The score starts at **100 points** and deductions are applied based on browsing behavior:
 
-The score is translated into a productivity grade ranging from **A** to **D**.
+- **Tab switching:** −1.5 points per tab switch
+- **Short visits:** −3 points per short visit
+- **Website variety:** −10 points when more than 15 different websites are visited
+
+The final score is kept between **0 and 100**.
+
+The score is also classified into focus zones and translated into a productivity grade from **A to D**.
+
+### Why did my score change?
+
+The dashboard provides a transparent breakdown showing:
+
+- Starting score
+- Tab-switching penalty
+- Short-visit penalty
+- Website-variety penalty
+- Final Focus Score
+
+This allows users to understand exactly how their score was calculated instead of seeing only a single number.
+
+---
+
+# 📈 Personal Baseline
+
+Focus Pulse can compare today's Focus Score with the user's personal browsing baseline.
+
+The Personal Baseline is calculated from the user's previous days of activity, using up to the previous **7 days** and excluding the current day.
+
+A minimum of **3 previous days** is required before a baseline is displayed.
+
+---
+
+# 💡 Focus Insight
+
+Focus Pulse provides a short actionable recommendation based on the user's current browsing statistics.
+
+Focus Insight can consider:
+
+- Performance compared with the personal baseline
+- Frequent tab switching
+- Short visits
+- High website variety
+- Strong focus scores
+
+Focus Insight provides additional context and a practical suggestion for improving browsing habits.
 
 ---
 
@@ -198,13 +244,11 @@ Possible future enhancements include:
 - Dark mode
 - Custom productivity goals
 - Monthly reports
-- Focus session reminders
 - Website categorization
-- Weight the focus score by time-of-day and session length. The
-  current formula (flat -1.5 per switch, -3 per short visit, -10
-  if more than 15 sites) is a straightforward v1 heuristic and
-  doesn't yet account for when a session happened or how long it
-  ran.
+- Time-of-day and session-length weight
+- More advance personalisation of Focus Score
+
+The current scoring formula is intentionally designed as a simple and transparent v1 heuristic. It focuses on observable browsing behavior rather than attempting to infer whether a particular website or activity is productive or distracting.
 
 ---
 
@@ -217,14 +261,16 @@ with [MkDocs](https://www.mkdocs.org/) using the
 **Live site:** https://jainam249.github.io/browser-focus-tracker/
 
 ```
+
 docs/
-├── index.md            # Overview / landing page
-├── install.md          # Install from the store or unpacked
-├── how-it-works.md     # Tracking model and focus score formula
-├── privacy.md          # Privacy policy (the URL used on the store listing)
-├── changelog.md        # Release history
+├── index.md # Overview / landing page
+├── install.md # Install from the store or unpacked
+├── how-it-works.md # Tracking model and focus score formula
+├── privacy.md # Privacy policy (the URL used on the store listing)
+├── changelog.md # Release history
 └── stylesheets/
-    └── extra.css       # Theme overrides and design tokens
+└── extra.css # Theme overrides and design tokens
+
 ```
 
 The site configuration — navigation, theme, palette, markdown extensions — is
