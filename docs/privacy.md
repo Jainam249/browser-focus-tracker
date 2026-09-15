@@ -38,7 +38,7 @@ For each calendar day, the extension keeps a small record in
 
 **Site hostnames and time totals**
 : For example `wikipedia.org` paired with the number of milliseconds it was the
-  focused tab. Only the hostname is kept, never the full address of the page.
+focused tab. Only the hostname is kept, never the full address of the page.
 
 **Tab switches**
 : A count of how many times you changed active tabs.
@@ -51,8 +51,8 @@ For each calendar day, the extension keeps a small record in
 
 **Current session state**
 : The hostname you are on right now and when that session began, so a session
-  survives Chrome suspending the extension. This is cleared each time the
-  browser restarts.
+survives Chrome suspending the extension. This is cleared each time the
+browser restarts.
 
 These daily records accumulate locally to build the 7-day trend shown on the
 dashboard. Nothing else is recorded.
@@ -75,12 +75,12 @@ dashboard. Nothing else is recorded.
 Focus Pulse asks for the smallest set of permissions that lets it measure
 attention. Every one of them is used entirely on your machine.
 
-| Permission | What it is used for | Leaves device? |
-| --- | --- | --- |
-| `tabs` | Read the active tab's address to derive its hostname, count tab switches and open tabs, and detect whether a tab is playing audio so video time is not mistaken for idle time. | <span class="ft-chip">No</span> |
-| `storage` | Save your statistics and in-progress session on your own device. Local storage only — never Chrome's account sync. | <span class="ft-chip">No</span> |
-| `idle` | Notice when you step away or lock the screen, so time away from the computer is not counted as browsing. Only the coarse active / idle / locked state is read. | <span class="ft-chip">No</span> |
-| `alarms` | Wake the extension once a minute to save the session in progress, so long stretches on one page are not lost when Chrome suspends it. | <span class="ft-chip">No</span> |
+| Permission  | What it is used for                                                                                                                                                                                     | Leaves device?                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `tabs`      | Read the active tab's address to derive its hostname, count tab switches and open tabs, and detect whether a tab is playing audio so video time is not mistaken for idle time.                          | <span class="ft-chip">No</span>                 |
+| `storage`   | Save your statistics and in-progress session on your own device. Local storage only — never Chrome's account sync.                                                                                      | <span class="ft-chip">No</span>                 |
+| `idle`      | Notice when you step away or lock the screen, so time away from the computer is not counted as browsing. Only the coarse active / idle / locked state is read.                                          | <span class="ft-chip">No</span>                 |
+| `alarms`    | Wake the extension once a minute to save the session in progress, so long stretches on one page are not lost when Chrome suspends it.                                                                   | <span class="ft-chip">No</span>                 |
 | `downloads` | Save the JSON, CSV, or weekly report file to your Downloads folder when you click an export button. The extension never downloads anything from the internet and does not read your existing downloads. | <span class="ft-chip">Only if you export</span> |
 
 ## No remote code
@@ -105,15 +105,15 @@ are always in control:
 
 **Reset today**
 : The button in the extension popup deletes the current day's record
-  immediately.
+immediately.
 
 **Clear everything**
 : Removing Focus Pulse from `chrome://extensions` deletes all of its stored
-  data along with it. Nothing survives elsewhere, because there is nowhere else.
+data along with it. Nothing survives elsewhere, because there is nowhere else.
 
 **Take it with you**
 : Export your statistics as JSON or CSV at any time. The files are yours; the
-  extension keeps no copy of what you exported.
+extension keeps no copy of what you exported.
 
 ## Incognito windows
 
