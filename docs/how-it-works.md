@@ -210,5 +210,5 @@ close, and alarm — read-modify-write operations on the daily record are
 serialised through a queue. This prevents concurrent updates from overwriting
 each other and losing recorded activity.
 
-Nothing here is transmitted anywhere. See [Privacy](../privacy/) for the full
+Nothing here is transmitted anywhere. See [Privacy](privacy.md) for the full
 statement.
