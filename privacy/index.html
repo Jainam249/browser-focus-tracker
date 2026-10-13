@@ -764,7 +764,7 @@ stays there. There is no server to send it to.</p>
 <dl>
 <dt><strong>Site hostnames and time totals</strong></dt>
 <dd>For example <code>wikipedia.org</code> paired with the number of milliseconds it was the
-  focused tab. Only the hostname is kept, never the full address of the page.</dd>
+focused tab. Only the hostname is kept, never the full address of the page.</dd>
 <dt><strong>Tab switches</strong></dt>
 <dd>A count of how many times you changed active tabs.</dd>
 <dt><strong>Short visits</strong></dt>
@@ -773,11 +773,10 @@ stays there. There is no server to send it to.</p>
 <dd>The highest number of tabs open at once that day.</dd>
 <dt><strong>Current session state</strong></dt>
 <dd>The hostname you are on right now and when that session began, so a session
-  survives Chrome suspending the extension. This is cleared each time the
-  browser restarts.</dd>
+survives Chrome suspending the extension. This is cleared each time the
+browser restarts.</dd>
 </dl>
-<p>These daily records accumulate locally to build the 7-day trend shown on the
-dashboard. Nothing else is recorded.</p>
+<p>These daily records accumulate locally to build the historical focus trends shown on the dashboard. The dashboard lets you view trends over 7-day, 15-day and 30-day ranges and switch between Bar Graph and Line Graph visualizations. These display options do not change what browsing data is collected or where it is stored. Nothing else is recorded.</p>
 <h2 id="what-it-never-touches">What it never touches<a class="headerlink" href="#what-it-never-touches" title="Link to this section">&para;</a></h2>
 <ul>
 <li>The content of any page you visit. Focus Pulse injects no scripts into
@@ -847,13 +846,13 @@ are always in control:</p>
 <dl>
 <dt><strong>Reset today</strong></dt>
 <dd>The button in the extension popup deletes the current day's record
-  immediately.</dd>
+immediately.</dd>
 <dt><strong>Clear everything</strong></dt>
 <dd>Removing Focus Pulse from <code>chrome://extensions</code> deletes all of its stored
-  data along with it. Nothing survives elsewhere, because there is nowhere else.</dd>
+data along with it. Nothing survives elsewhere, because there is nowhere else.</dd>
 <dt><strong>Take it with you</strong></dt>
 <dd>Export your statistics as JSON or CSV at any time. The files are yours; the
-  extension keeps no copy of what you exported.</dd>
+extension keeps no copy of what you exported.</dd>
 </dl>
 <h2 id="incognito-windows">Incognito windows<a class="headerlink" href="#incognito-windows" title="Link to this section">&para;</a></h2>
 <p>Chrome does not run extensions in Incognito windows unless you explicitly allow

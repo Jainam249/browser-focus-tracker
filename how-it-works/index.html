@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="The tracking model behind Focus Pulse — what counts as browsing time, how idle is handled, and the exact focus score formula.">
+        <meta name="description" content="The tracking model behind Focus Pulse — what counts as browsing time, how idle is handled, and how the focus score, personal baseline, and Focus Insight are calculated.">
       
       
         <meta name="author" content="Jainam Shah">
@@ -453,10 +453,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#grades-and-zones" class="md-nav__link">
+  <a href="#grades-and-focus-zones" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Grades and zones
+        Grades and focus zones
       
     </span>
   </a>
@@ -464,10 +464,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#what-the-formula-does-not-do" class="md-nav__link">
+  <a href="#why-did-my-score-change" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What the formula does not do
+        Why did my score change?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-personal-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your Personal Baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#focus-insight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Focus Insight
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations-of-the-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations of the score
       
     </span>
   </a>
@@ -652,10 +685,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#grades-and-zones" class="md-nav__link">
+  <a href="#grades-and-focus-zones" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Grades and zones
+        Grades and focus zones
       
     </span>
   </a>
@@ -663,10 +696,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#what-the-formula-does-not-do" class="md-nav__link">
+  <a href="#why-did-my-score-change" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What the formula does not do
+        Why did my score change?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#your-personal-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Your Personal Baseline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#focus-insight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Focus Insight
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations-of-the-score" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations of the score
       
     </span>
   </a>
@@ -719,7 +785,7 @@
 Focus Pulse measures, what it deliberately refuses to measure, and how the
 number on the gauge is calculated.</p>
 <h2 id="what-counts-as-browsing-time">What counts as browsing time<a class="headerlink" href="#what-counts-as-browsing-time" title="Link to this section">&para;</a></h2>
-<p>Time is credited to a site only when <strong>all</strong> of these hold:</p>
+<p>Time is credited to a site only when <strong>all three</strong> of these hold:</p>
 <ul>
 <li>The site's tab is the active tab in its window.</li>
 <li>A Chrome window actually has focus.</li>
@@ -729,64 +795,67 @@ number on the gauge is calculated.</p>
 is banked against that site's hostname. When they become true again, a fresh
 session starts.</p>
 <h3 id="pages-that-are-never-tracked">Pages that are never tracked<a class="headerlink" href="#pages-that-are-never-tracked" title="Link to this section">&para;</a></h3>
-<p>Internal browser pages are skipped entirely — <code>chrome://</code>, <code>chrome-extension://</code>,
-<code>edge://</code>, and <code>about:</code>. Time spent on the new tab page or in your settings is
-not counted as browsing, and never appears in your statistics.</p>
+<p>Internal browser pages are skipped entirely — <code>chrome://</code>,
+<code>chrome-extension://</code>, <code>edge://</code>, and <code>about:</code>. Time spent on the new tab page
+or in browser settings is not counted as browsing and never appears in your
+statistics.</p>
 <h3 id="hostnames-not-urls">Hostnames, not URLs<a class="headerlink" href="#hostnames-not-urls" title="Link to this section">&para;</a></h3>
 <p>Only the hostname is stored. Reading three different articles on
-<code>wikipedia.org</code> produces one entry, <code>wikipedia.org</code>, with the combined time. The
-full address is used momentarily to extract that hostname and is not retained.</p>
+<code>wikipedia.org</code> produces one entry, <code>wikipedia.org</code>, with the combined time.
+The full address is used momentarily to extract that hostname and is not
+retained.</p>
 <h2 id="handling-absence-honestly">Handling absence honestly<a class="headerlink" href="#handling-absence-honestly" title="Link to this section">&para;</a></h2>
 <p>The hardest part of a focus tracker is not counting time you weren't there for.</p>
 <p><strong>Idle detection runs on a 5-minute threshold.</strong> Chrome's idle API only sees
-physical keyboard and mouse input, so a shorter threshold punishes normal
+physical keyboard and mouse input, so a shorter threshold could punish normal
 behaviour — reading a long article without touching the mouse would register as
-absence. Five minutes is the trade-off: genuine idle time takes up to five
-minutes to be noticed, but ordinary reading is never misclassified.</p>
+absence. Five minutes is the trade-off: genuine idle time can take up to five
+minutes to be noticed, while ordinary reading is less likely to be
+misclassified.</p>
 <p><strong>Audio is treated as presence.</strong> If the active tab is playing audio when the
 system goes idle, tracking continues. Watching a 40-minute talk is engagement,
-not idling. A <em>locked</em> screen has no such exemption — if you locked the
-computer, you left.</p>
+not idling. A <strong>locked screen</strong> has no such exemption — if you locked the
+computer, tracking stops.</p>
 <p><strong>Brief focus loss has a 300 ms grace period.</strong> Opening DevTools or a zoom menu
 can momentarily unfocus the window. Focus Pulse waits 300 ms and re-checks
-before deciding the browser genuinely lost focus, so these blips don't shred a
-session into fragments.</p>
+before deciding the browser genuinely lost focus, so these brief interruptions
+do not unnecessarily fragment tracking.</p>
 <div class="admonition info">
 <p class="admonition-title">Surviving Manifest V3</p>
-<p>Chrome can kill an extension's service worker after roughly 30 seconds of
-inactivity, and in-memory variables die with it. Focus Pulse treats
-<code>chrome.storage.local</code> as the only source of truth, and runs a one-minute
-alarm that checkpoints the session in progress. Without that alarm, a long
-single-tab session — a video, a long read — would produce no events at all
-and the time would be silently lost.</p>
 </div>
+<p>Chrome can suspend extension service workers, and in-memory variables can
+disappear with them. Focus Pulse treats <code>chrome.storage.local</code> as the
+persistent source of truth and runs a one-minute alarm that checkpoints the
+session in progress. Without that checkpoint, a long single-tab session —
+such as a video or long read — could lose time when the service worker is
+suspended.</p>
 <h2 id="short-visits">Short visits<a class="headerlink" href="#short-visits" title="Link to this section">&para;</a></h2>
-<p>A session shorter than <strong>10 seconds</strong> is recorded as a short visit and costs
-score points. But this only applies when the session ended because you
-<em>deliberately navigated away</em> — switched tabs or loaded a new URL.</p>
-<p>A session cut short because the browser lost focus, went idle, or was
-checkpointed by the alarm is <strong>not</strong> penalised. That is an interruption from
-outside the browser, not you bouncing between sites, and scoring it as one would
-punish you for taking a phone call.</p>
+<p>A session shorter than <strong>10 seconds</strong> is recorded as a short visit and can
+reduce the focus score.</p>
+<p>A short visit is only counted when the session ends because you deliberately
+moved away from the page — for example, by switching tabs or loading a new URL.</p>
+<p>A session cut short because the browser lost focus, the system went idle, or
+the session was checkpointed by the alarm is <strong>not</strong> treated as a short visit.
+Those events are interruptions outside the browsing behaviour being measured.</p>
 <h2 id="the-focus-score">The focus score<a class="headerlink" href="#the-focus-score" title="Link to this section">&para;</a></h2>
-<p>Every day starts at 100 points and loses points for fragmentation:</p>
+<p>Every day starts at <strong>100 points</strong>. The score then loses points for selected
+browsing behaviours:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>score = 100
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>      − (tab switches      × 1.5)
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>      − (short visits      × 3)
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>      − (10 if more than 15 distinct sites were visited)
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>clamped to the range 0–100, then rounded
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>       − (tab switches × 1.5)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>       − (short visits × 3)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>       − (10 if more than 15 distinct sites were visited)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>final score = clamped to 0–100 and rounded
 </code></pre></div>
-<h3 id="grades-and-zones">Grades and zones<a class="headerlink" href="#grades-and-zones" title="Link to this section">&para;</a></h3>
-<p>The score maps to a letter grade and a focus zone. They use different
-boundaries, on purpose — the zone is a coarse read for the gauge, the grade is
-the finer judgement.</p>
+<h3 id="grades-and-focus-zones">Grades and focus zones<a class="headerlink" href="#grades-and-focus-zones" title="Link to this section">&para;</a></h3>
+<p>The final score is also shown as a letter grade and a focus zone.</p>
 <table>
 <thead>
 <tr>
 <th>Score</th>
 <th>Grade</th>
-<th>Zone</th>
+<th>Focus zone</th>
 </tr>
 </thead>
 <tbody>
@@ -817,12 +886,69 @@ the finer judgement.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="what-the-formula-does-not-do">What the formula does not do<a class="headerlink" href="#what-the-formula-does-not-do" title="Link to this section">&para;</a></h3>
-<p>This is a v1 heuristic and it is worth being upfront about its limits. The
-penalties are flat: a tab switch costs the same 1.5 points whether it happened
-during an hour of deep work or during two minutes of triage. The formula does
-not currently weight by time of day, by how long a session ran, or by what kind
-of site was involved. Those are known future improvements, not oversights.</p>
+<p>The focus zone gives a simple interpretation of the score, while the letter
+grade provides a more detailed classification.</p>
+<h3 id="why-did-my-score-change">Why did my score change?<a class="headerlink" href="#why-did-my-score-change" title="Link to this section">&para;</a></h3>
+<p>Focus Pulse makes the score easier to understand by showing a breakdown of
+where points were lost.</p>
+<p>The dashboard shows:</p>
+<ul>
+<li><strong>Starting score</strong> — every day begins at 100.</li>
+<li><strong>Tab switching</strong> — each tab switch reduces the score by 1.5 points.</li>
+<li><strong>Short visits</strong> — each qualifying short visit reduces the score by 3 points.</li>
+<li><strong>Website variety</strong> — visiting more than 15 distinct sites applies a
+  10-point penalty.</li>
+<li><strong>Today's focus score</strong> — the resulting score after the penalties are applied
+  and the value is clamped between 0 and 100.</li>
+</ul>
+<p>This breakdown is intended to make the score transparent rather than presenting
+it as an unexplained number.</p>
+<h3 id="your-personal-baseline">Your Personal Baseline<a class="headerlink" href="#your-personal-baseline" title="Link to this section">&para;</a></h3>
+<p>After enough daily data has been collected, Focus Pulse calculates a personal
+baseline using up to the previous seven days of focus scores.</p>
+<p>At least three previous days are required before a baseline is shown. This
+prevents the comparison from being based on too little information.</p>
+<p>The dashboard compares today's score with your usual score and shows whether
+you are:</p>
+<ul>
+<li>Above your usual focus</li>
+<li>Below your usual focus</li>
+<li>Around your usual focus</li>
+</ul>
+<p>The personal baseline is calculated entirely from your locally stored daily
+statistics.</p>
+<h3 id="focus-insight">Focus Insight<a class="headerlink" href="#focus-insight" title="Link to this section">&para;</a></h3>
+<p>Focus Pulse also provides a short <strong>Focus Insight</strong> based on the day's
+browsing statistics.</p>
+<p>The insight can highlight patterns such as:</p>
+<ul>
+<li>Frequent tab switching</li>
+<li>Several short visits</li>
+<li>A large number of different websites</li>
+<li>A score significantly above or below your personal baseline</li>
+<li>A generally strong or steady focus score</li>
+</ul>
+<p>The insight is intended as a lightweight suggestion, not as a measurement of
+your actual productivity or mental attention.</p>
+<p>For example, a high number of tab switches may result in a suggestion to keep
+fewer active tabs. A score above your personal baseline may result in a positive
+message encouraging you to continue the browsing routine that worked well.</p>
+<p>These insights are generated locally and do not require your browsing data to
+be sent anywhere.</p>
+<h3 id="limitations-of-the-score">Limitations of the score<a class="headerlink" href="#limitations-of-the-score" title="Link to this section">&para;</a></h3>
+<p>The focus score is a <strong>v1 heuristic</strong>, not a scientific measurement of
+attention, productivity, or concentration.</p>
+<p>The score measures observable browsing behaviour such as tab switching,
+short visits, and website variety. It cannot determine whether you are
+actually focused on a task.</p>
+<p>For example, reading a long document without switching tabs may produce a high
+score even though Focus Pulse cannot know whether you were paying attention.
+Similarly, switching tabs frequently may be completely reasonable when a task
+requires research.</p>
+<p>The personal baseline and Focus Insight provide additional context, but they
+do not change this fundamental limitation.</p>
+<p>The formula may evolve in future versions as Focus Pulse develops more
+meaningful ways to represent browsing behaviour.</p>
 <h2 id="where-the-data-lives">Where the data lives<a class="headerlink" href="#where-the-data-lives" title="Link to this section">&para;</a></h2>
 <p>Each day is stored as a single small record in <code>chrome.storage.local</code>:</p>
 <table>
@@ -852,11 +978,15 @@ of site was involved. Those are known future improvements, not oversights.</p>
 </tbody>
 </table>
 <p>Alongside these sits the in-progress session state — the current hostname and
-when its session started — which is cleared on every browser restart.</p>
-<p>Because several listeners can fire at once (a tab switch, a tab close, and the
-alarm landing together), all read-modify-write operations on that record are
-serialised through a queue. Without it, two concurrent updates could silently
-clobber each other and lose a chunk of your day.</p>
+when its session started.</p>
+<p>The daily records are used to calculate the focus score, 7-day trend, personal
+baseline, and Focus Insight.</p>
+<p>The <code>maxTabs</code> value is tracked for informational purposes but is <strong>not currently
+used directly in the focus-score formula</strong>.</p>
+<p>Because several listeners can fire at once — for example, a tab switch, tab
+close, and alarm — read-modify-write operations on the daily record are
+serialised through a queue. This prevents concurrent updates from overwriting
+each other and losing recorded activity.</p>
 <p>Nothing here is transmitted anywhere. See <a href="../privacy/">Privacy</a> for the full
 statement.</p>
 
