@@ -215,10 +215,12 @@ async function saveCurrentSession({ countShortVisit = true } = {}) {
 async function startTracking(domain, url) {
   if (!domain || !url) return;
 
-  await chrome.storage.local.set({
-    activeDomain: domain,
-    activeUrl: url,
-    sessionStart: Date.now(),
+  await withStorageLock(async () => {
+    await chrome.storage.local.set({
+      activeDomain: domain,
+      activeUrl: url,
+      sessionStart: Date.now(),
+    });
   });
 }
 
@@ -236,12 +238,14 @@ async function startTracking(domain, url) {
 ------------------------------*/
 
 async function trackCurrentActiveTab() {
-  const tabs = await chrome.tabs.query({
-    active: true,
-    currentWindow: true,
-  });
+  const chromeFocused = await isChromeFocused();
 
-  const tab = tabs[0];
+  if (!chromeFocused) {
+    log("trackCurrentActiveTab skipped: Chrome not focused");
+    return;
+  }
+
+  const tab = await getFocusedChromeTab();
 
   if (!tab || !tab.url) return;
 
@@ -291,14 +295,72 @@ async function clearActiveTracking() {
   ]);
 }
 
+async function getFocusedChromeTab() {
+  const tabs = await chrome.tabs.query({
+    active: true,
+    lastFocusedWindow: true,
+  });
+
+  return tabs[0] || null;
+}
+
+async function isChromeFocused() {
+  const windows = await chrome.windows.getAll({
+    populate: false,
+    windowTypes: ["normal"],
+  });
+
+  return windows.some((window) => window.focused);
+}
+
 async function resumeTracking() {
-  const active = await chrome.storage.local.get("activeDomain");
+  // Never resume a website timer while Chrome itself
+  // is not the foreground application.
+  const chromeFocused = await isChromeFocused();
 
-  if (!active.activeDomain) return;
+  if (!chromeFocused) {
+    log("resumeTracking blocked: Chrome is not focused");
+    return;
+  }
 
-  const session = await chrome.storage.local.get("sessionStart");
+  const tab = await getFocusedChromeTab();
 
-  if (!session.sessionStart) {
+  if (!tab || !tab.url || isIgnoredPage(tab.url)) {
+    log("resumeTracking blocked: no valid focused tab");
+    return;
+  }
+
+  const domain = getDomain(tab.url);
+
+  if (!domain) {
+    log("resumeTracking blocked: no valid domain");
+    return;
+  }
+
+  const storage = await chrome.storage.local.get([
+    "activeDomain",
+    "sessionStart",
+  ]);
+
+  // If the currently focused tab is different from the
+  // domain we previously tracked, do not resurrect the
+  // old website's session.
+  if (storage.activeDomain && storage.activeDomain !== domain) {
+    log(
+      "resumeTracking blocked: focused tab differs from activeDomain",
+      storage.activeDomain,
+      domain,
+    );
+
+    return;
+  }
+
+  if (!storage.activeDomain) {
+    await startTracking(domain, tab.url);
+    return;
+  }
+
+  if (!storage.sessionStart) {
     await chrome.storage.local.set({
       sessionStart: Date.now(),
     });
@@ -355,18 +417,56 @@ chrome.alarms.create(AUTO_SAVE_ALARM, {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   log("Alarm fired:", alarm.name);
 
-  // Must be async + awaited here. If this listener returns
-  // before the write to chrome.storage actually finishes,
-  // Chrome can treat the listener as "done" and suspend the
-  // service worker mid-save - silently dropping that minute's
-  // checkpoint. This alarm is often the ONLY thing waking the
-  // worker during a long single-tab session (e.g. watching a
-  // video with no tab switches), so a dropped save here
-  // directly shows up as missing time on the dashboard.
   if (alarm.name !== AUTO_SAVE_ALARM) return;
 
-  // Periodic checkpoint only.
-  // Never count an auto-save as a short visit.
+  // Before adding any elapsed time, verify that Chrome
+  // is actually the foreground application.
+  const chromeFocused = await isChromeFocused();
+
+  if (!chromeFocused) {
+    log("Auto-save blocked: Chrome is not focused");
+
+    await stopTracking();
+
+    return;
+  }
+
+  const tab = await getFocusedChromeTab();
+
+  if (!tab || !tab.url || isIgnoredPage(tab.url)) {
+    log("Auto-save blocked: no valid focused Chrome tab");
+
+    await stopTracking();
+
+    return;
+  }
+
+  const domain = getDomain(tab.url);
+
+  if (!domain) {
+    await stopTracking();
+
+    return;
+  }
+
+  const storage = await chrome.storage.local.get("activeDomain");
+
+  // Don't let an old session continue accumulating if the
+  // user has moved to a different website.
+  if (storage.activeDomain && storage.activeDomain !== domain) {
+    log("Auto-save detected domain change:", storage.activeDomain, "→", domain);
+
+    // Bank the previous site's time.
+    await saveCurrentSession({
+      countShortVisit: false,
+    });
+
+    // Start the currently focused website.
+    await startTracking(domain, tab.url);
+
+    return;
+  }
+
   await saveCurrentSession({
     countShortVisit: false,
   });
@@ -526,23 +626,26 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
 ------------------------------*/
 
 chrome.windows.onFocusChanged.addListener(async (windowId) => {
-  log("Window focus:", windowId);
+  log("Window focus changed:", windowId);
 
-  // Browser temporarily lost focus
+  // Chrome reports WINDOW_ID_NONE when focus moves outside
+  // Chrome entirely, for example:
+  //
+  // Chrome → VS Code
+  // Chrome → Word
+  // Chrome → Discord
+  // Chrome → another browser
+  // Chrome → any other application
+  //
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
     clearTimeout(focusLossTimer);
 
     focusLossTimer = setTimeout(async () => {
-      const windows = await chrome.windows.getAll({
-        populate: false,
-        windowTypes: ["normal"],
-      });
+      const chromeFocused = await isChromeFocused();
 
-      // If no Chrome window is focused after 300 ms,
-      // then this is a real focus loss.
-      const hasFocusedWindow = windows.some((w) => w.focused);
+      if (!chromeFocused) {
+        log("Chrome lost foreground focus");
 
-      if (!hasFocusedWindow) {
         await stopTracking();
       }
     }, 300);
@@ -550,7 +653,7 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
     return;
   }
 
-  // Focus came back quickly (zoom menu, DevTools, etc.)
+  // Focus returned to a Chrome window.
   clearTimeout(focusLossTimer);
 
   await resumeTracking();
@@ -558,22 +661,37 @@ chrome.windows.onFocusChanged.addListener(async (windowId) => {
 
 chrome.idle.onStateChanged.addListener(async (state) => {
   if (state === "idle") {
-    // "locked" always stops tracking below - the person
-    // actually left. Plain "idle" (just no input) gets
-    // one exception: if the active tab is playing audio,
-    // that's still genuine engagement, so don't stop.
+    // Audio/video is only allowed to prevent the idle timeout
+    // when Chrome itself is still the foreground application.
+    const chromeFocused = await isChromeFocused();
+
+    if (!chromeFocused) {
+      await stopTracking();
+      return;
+    }
+
     if (await isActiveTabAudible()) {
       return;
     }
 
     await stopTracking();
+
+    return;
   }
 
   if (state === "locked") {
     await stopTracking();
+
+    return;
   }
 
   if (state === "active") {
+    // IMPORTANT:
+    // "active" only means keyboard/mouse input happened.
+    // It does NOT mean Chrome is focused.
+    //
+    // resumeTracking() now verifies Chrome focus and the
+    // currently active tab before restarting anything.
     await resumeTracking();
   }
 });

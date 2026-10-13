@@ -84,7 +84,10 @@
           <div class="personal-baseline" id="personalBaseline">
             <div class="baseline-header">
               <h3>Your Personal Baseline</h3>
-              <p class="baseline-description">Based on your previous 7 days</p>
+              <p id="baselineDaysUsed" class="baseline-days-used"></p>
+              <p class="baseline-description">
+                Your baseline is calculated from recent browsing history.
+              </p>
             </div>
 
             <div id="baselineContent">
@@ -171,8 +174,24 @@
       </section>
 
       <section class="panel">
-        <h2>Weekly signal</h2>
-        <p class="panel-sub">Last 7 days</p>
+        <div class="panel-heading-row">
+          <div>
+            <h2>Focus score trend</h2>
+            <p class="panel-sub" id="trendPeriodLabel">Last 7 days</p>
+          </div>
+
+          <div class="trend-range" role="group" aria-label="Focus score range">
+            <button class="trend-range-btn is-active" data-range="7">
+              7 Days
+            </button>
+            <button class="trend-range-btn" data-range="15">15 Days</button>
+            <button class="trend-range-btn" data-range="30">30 Days</button>
+          </div>
+          <div class="graph-type" role="group" aria-label="Graph type">
+            <button class="graph-type-btn" data-graph="bar">Bar Graph</button>
+            <button class="graph-type-btn" data-graph="line">Line Graph</button>
+          </div>
+        </div>
 
         <div class="trend" id="trend"></div>
 
@@ -181,6 +200,7 @@
             <dt>Average</dt>
             <dd id="weeklyAverage">--</dd>
             <p id="weeklyDelta" class="weekly-delta">--</p>
+            <p id="weeklyDeltaPeriod" class="panel-sub"></p>
           </div>
           <div class="readout">
             <dt>Best day</dt>

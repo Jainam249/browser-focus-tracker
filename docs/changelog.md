@@ -5,9 +5,7 @@ description: Development history of Focus Pulse, from the first tracking prototy
 
 # Changelog
 
-Focus Pulse has not yet cut tagged releases, so this history is reconstructed
-from the repository's commits. Version **1.0** is the current manifest version
-and the one
+The changelog records the development history of Focus Pulse. Version **1.2.0** is the next planned release, following the existing version 1.1.0. Release dates and publication status will be updated when the release is finalized.
 [published to the Chrome Web Store](https://chromewebstore.google.com/detail/focuspulse/gcffkhpmcpjkmjmjeeiigbnjieoaennn).
 
 ## 1.0 — published
@@ -83,3 +81,14 @@ Ideas under consideration, from the project README:
 - Custom productivity goals and monthly reports.
 - Website categorisation.
 - Focus session reminders.
+
+## 1.2.0 — Dashboard enhancements
+
+**Release date: To be confirmed**
+
+- Added a graph selector to switch between Bar Graph and Line Graph views.
+- Added 7-day, 15-day and 30-day trend ranges.
+- Saved the selected graph type so it is restored when the dashboard is reopened.
+- Improved the dashboard's flexibility for reviewing historical focus scores.
+
+This release updates dashboard visualization and user preferences without changing the focus score formula or the underlying browsing-data collection model.

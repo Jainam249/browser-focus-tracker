@@ -22,13 +22,13 @@ code you install is the code you can read here.
 ## Load unpacked (developers)
 
 Focus Pulse has no build step. There is nothing to compile, bundle, or install
-— the repository *is* the extension.
+— the repository _is_ the extension.
 
 1. Clone the repository:
 
-    ```bash
-    git clone https://github.com/Jainam249/browser-focus-tracker.git
-    ```
+   ```bash
+   git clone https://github.com/Jainam249/browser-focus-tracker.git
+   ```
 
 2. Open `chrome://extensions` in Chrome.
 
@@ -38,21 +38,20 @@ Focus Pulse has no build step. There is nothing to compile, bundle, or install
 
 5. Select the cloned `browser-focus-tracker` folder.
 
-Focus Pulse starts measuring immediately. Click the toolbar icon for today's
-score, or open the dashboard from the popup for the weekly view.
+Focus Pulse starts measuring immediately. Click the toolbar icon to view today's focus score, or open the dashboard from the popup to explore your focus history. The dashboard provides 7-day, 15-day and 30-day trend ranges, Bar Graph and Line Graph views, daily statistics, focus insights and a downloadable weekly report. Your selected graph type is remembered when you reopen the dashboard.
 
 ## Permissions you will be asked for
 
 Chrome will list the permissions at install time. Each one is used entirely on
 your device — [the privacy policy explains what each is for](privacy.md#why-each-permission-is-requested).
 
-| Permission | Why |
-| --- | --- |
-| `tabs` | Read the active tab's hostname, count switches and open tabs |
-| `storage` | Save your statistics locally |
-| `idle` | Stop the clock when you step away |
-| `alarms` | Checkpoint the session so Chrome's suspension doesn't lose it |
-| `downloads` | Save exports to your Downloads folder when you ask |
+| Permission  | Why                                                           |
+| ----------- | ------------------------------------------------------------- |
+| `tabs`      | Read the active tab's hostname, count switches and open tabs  |
+| `storage`   | Save your statistics locally                                  |
+| `idle`      | Stop the clock when you step away                             |
+| `alarms`    | Checkpoint the session so Chrome's suspension doesn't lose it |
+| `downloads` | Save exports to your Downloads folder when you ask            |
 
 ## Incognito
 

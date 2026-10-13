@@ -41,18 +41,20 @@ The extension monitors website usage, calculates a daily focus score, explains h
 
 - Daily statistics overview
 - Weekly productivity summary
-- 7-day activity history
+- Selectable 7-day, 15-day and 30-day focus trends
+- Switch between Bar Graph and Line Graph views
+- Remember the selected graph type when reopening the dashboard
 - Best and worst browsing days
 - Top visited websites
-- Foucs Insight recommendations
+- Focus Insight recommendations
 - "Why did my score change?" score breakdown
 - Personal Baseline comparison
 
 ### 📁 Data Export
 
-- Export browsing history as JSON
-- Export statistics as CSV
-- Weekly report generation
+- Export browsing statistics as JSON
+- Export browsing statistics as CSV
+- Generate a weekly report from the dashboard
 
 ### 🎨 User Experience
 
@@ -61,26 +63,31 @@ The extension monitors website usage, calculates a daily focus score, explains h
 - Empty-state handling
 - Professional dashboard layout
 
-### 🔒 Privacy
+# 🔐 Privacy
 
-- 100% local storage
-- No backend server
-- No cloud synchronization
-- No user accounts
-- No personal browsing data collected
+Focus Pulse follows a **local-first architecture**.
+
+- Browsing activity and focus statistics are stored locally using Chrome Storage.
+- No backend server or cloud storage is used for browsing statistics.
+- No user account is required.
+- No analytics service is used.
+- The extension does not send browsing statistics to external servers.
+- Users can explicitly export their statistics as JSON or CSV, or generate a weekly report.
+
+Uninstalling the extension removes its locally stored extension data as managed by Chrome. Exported files are separate and may remain on the user's device.
 
 ---
 
 # 🛠️ Technology Stack
 
 - Chrome Extension Manifest V3
-- JavaScript (ES6+)
-- HTML5
-- CSS3
-- Chrome Storage API
-- Chrome Tabs API
-- Chrome Alarms API
-- Chrome Downloads API
+- JavaScript (ES6+), HTML5 and CSS3
+- Chrome Storage API for locally stored statistics
+- Chrome Tabs API for tab activity tracking
+- Chrome Alarms API for scheduled tracking tasks
+- Chrome Idle API for detecting idle states
+- Chrome Downloads API for exporting reports
+- MkDocs with Material for MkDocs for the documentation website
 
 ---
 
@@ -167,6 +174,12 @@ It records:
 - Daily statistics
 
 Using this information, the extension calculates a Focus Score. The dashboard then explains the score through a transparent score breakdown, compares it with the user's personal baseline when enough historical data is available, and generates a Focus Insight with a simple actionable recommendation.
+
+### Exploring Focus History
+
+The dashboard lets users review focus trends over 7-day, 15-day and 30-day periods. Users can switch between Bar Graph and Line Graph visualizations to explore their historical focus scores.
+
+The selected graph type is saved locally in the browser, allowing the dashboard to restore the user's graph preference when it is reopened. Changing the graph type affects only the visualization, not the underlying focus score calculation.
 
 ---
 

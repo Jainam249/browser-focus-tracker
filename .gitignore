@@ -9,6 +9,10 @@ Thumbs.db
 site/
 .venv/
 
+*.zip
+*.pdf
+*.docx
+*.doc
+
 # Chrome Web Store packaging artifacts
-FocusPulse-v1.0.1.zip
 extension-package/

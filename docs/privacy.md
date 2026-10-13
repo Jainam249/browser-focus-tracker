@@ -54,8 +54,7 @@ focused tab. Only the hostname is kept, never the full address of the page.
 survives Chrome suspending the extension. This is cleared each time the
 browser restarts.
 
-These daily records accumulate locally to build the 7-day trend shown on the
-dashboard. Nothing else is recorded.
+These daily records accumulate locally to build the historical focus trends shown on the dashboard. The dashboard lets you view trends over 7-day, 15-day and 30-day ranges and switch between Bar Graph and Line Graph visualizations. These display options do not change what browsing data is collected or where it is stored. Nothing else is recorded.
 
 ## What it never touches
 

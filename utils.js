@@ -44,7 +44,7 @@ export function calculateFocusScore(stats) {
 
 export function calculatePersonalBaseline(dailyStats, today) {
   const previousDays = Object.entries(dailyStats || {})
-    .filter(([date]) => date !== today)
+    .filter(([date, stats]) => date < today && stats)
     .sort(([a], [b]) => b.localeCompare(a))
     .slice(0, 7);
 

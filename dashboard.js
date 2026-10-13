@@ -12,6 +12,10 @@ import {
   getGradeLetter,
 } from "./utils.js";
 
+let selectedTrendRange = 7;
+
+let selectedGraphType = localStorage.getItem("focusPulseGraphType") || "line";
+
 /* -----------------------------
    Gauge (the reading section's signature element)
 ------------------------------*/
@@ -214,31 +218,141 @@ function renderTrend(orderedDays) {
     return;
   }
 
-  orderedDays.forEach(({ date, score }) => {
-    const bar = document.createElement("div");
+  function getDayLabel(date) {
+    const match = String(date).match(/^\d{4}-\d{2}-(\d{2})$/);
+    return match ? match[1] : String(date).slice(-2);
+  }
 
-    bar.className = "trend-bar";
-    bar.setAttribute("data-zone", zoneForScore(score));
+  // BAR GRAPH
+  if (selectedGraphType === "bar") {
+    orderedDays.forEach(({ date, score }) => {
+      const bar = document.createElement("div");
 
-    const fill = document.createElement("div");
+      bar.className = "trend-bar";
+      bar.setAttribute("data-zone", zoneForScore(score));
 
-    fill.className = "trend-bar-fill";
-    fill.style.height = `${Math.max(4, score)}%`;
-    fill.title = `${date}: ${score}/100`;
+      const fill = document.createElement("div");
+      fill.className = "trend-bar-fill";
+      // fill.style.height = `${Math.max(4, score)}%`;
+      fill.style.height = `${Math.max(4, Math.min(100, score))}%`;
+      fill.title = `${date}: ${score}/100`;
 
-    const label = document.createElement("div");
+      const label = document.createElement("div");
+      label.className = "trend-bar-label";
+      label.textContent = getDayLabel(date);
 
-    label.className = "trend-bar-label";
+      bar.appendChild(fill);
+      bar.appendChild(label);
+      container.appendChild(bar);
+    });
 
-    // "07" from "2026-07-09" -> use day of month for a
-    // compact, always-fits label
-    label.textContent = date.slice(-2);
+    return;
+  }
 
-    bar.appendChild(fill);
-    bar.appendChild(label);
+  // LINE GRAPH
+  const ns = "http://www.w3.org/2000/svg";
+  const width = 600;
+  const height = 220;
+  const left = 42;
+  const right = 585;
+  const top = 18;
+  const bottom = 170;
 
-    container.appendChild(bar);
+  const svg = document.createElementNS(ns, "svg");
+
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("class", "trend-line-chart");
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", "Focus score line graph");
+
+  const add = (tag, attrs, text) => {
+    const element = document.createElementNS(ns, tag);
+
+    Object.entries(attrs).forEach(([key, value]) => {
+      element.setAttribute(key, value);
+    });
+
+    if (text !== undefined) {
+      element.textContent = text;
+    }
+
+    svg.appendChild(element);
+    return element;
+  };
+
+  // Y-axis gridlines and labels.
+  // Draw horizontal gridlines without Y-axis numbers.
+  [0, 25, 50, 75, 100].forEach((value) => {
+    const y = bottom - (value / 100) * (bottom - top);
+
+    add("line", {
+      x1: left,
+      y1: y,
+      x2: right,
+      y2: y,
+      class: "trend-line-grid",
+    });
   });
+
+  // Position each recorded day.
+  const points = orderedDays.map((day, index) => ({
+    ...day,
+    x:
+      orderedDays.length === 1
+        ? (left + right) / 2
+        : left + (index * (right - left)) / (orderedDays.length - 1),
+    y: bottom - (day.score / 100) * (bottom - top),
+  }));
+
+  // Connect the scores.
+  if (points.length > 1) {
+    add("polyline", {
+      points: points.map((point) => `${point.x},${point.y}`).join(" "),
+      class: "trend-line-path",
+      fill: "none",
+    });
+  }
+
+  // Draw points, score labels, and dates.
+  points.forEach(({ date, score, x, y }) => {
+    const point = add("circle", {
+      cx: x,
+      cy: y,
+      r: 4,
+      class: "trend-line-point",
+      tabindex: "0",
+      role: "img",
+      "aria-label": `${date}: ${score}/100`,
+    });
+
+    const tooltip = document.createElementNS(ns, "title");
+    tooltip.textContent = `${date}: ${score}/100`;
+    point.appendChild(tooltip);
+
+    add(
+      "text",
+      {
+        x,
+        y: y - 10,
+        "text-anchor": "middle",
+        class: "trend-line-value",
+      },
+      String(score),
+    );
+
+    add(
+      "text",
+      {
+        x,
+        y: 195,
+        "text-anchor": "middle",
+        class: "trend-line-label",
+      },
+      getDayLabel(date),
+    );
+  });
+
+  container.appendChild(svg);
 }
 
 function updateWeeklySummary(weekly) {
@@ -259,18 +373,34 @@ function updateWeeklySummary(weekly) {
 
   document.getElementById("weeklySwitches").textContent = weekly.weeklySwitches;
 
-  renderTrend(weekly.orderedDays);
+  const trendDays = Object.entries(window.currentDailyStats || {})
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-selectedTrendRange)
+    .map(([date, stats]) => ({
+      date,
+      score: calculateFocusScore(stats),
+    }));
+
+  renderTrend(trendDays);
 }
 
 function updateWeeklyDelta(dailyStats) {
-  const allDaysAsc = Object.entries(dailyStats || {}).sort((a, b) =>
-    a[0].localeCompare(b[0]),
-  );
+  const allDaysAsc = Object.entries(dailyStats || {})
+    .filter(([date, stats]) => date && stats)
+    .sort((a, b) => a[0].localeCompare(b[0]));
 
   const element = document.getElementById("weeklyDelta");
+  const periodElement = document.getElementById("weeklyDeltaPeriod");
+
+  if (!element) return;
 
   if (allDaysAsc.length < 14) {
-    element.textContent = "Need 2 weeks of data";
+    element.textContent = "Need 14 recorded days to compare periods.";
+
+    if (periodElement) {
+      periodElement.textContent = `Currently have ${allDaysAsc.length} recorded day(s).`;
+    }
+
     return;
   }
 
@@ -289,12 +419,22 @@ function updateWeeklyDelta(dailyStats) {
 
   const delta = currentAverage - previousAverage;
 
+  const currentStart = current[0][0];
+  const currentEnd = current[current.length - 1][0];
+
+  const previousStart = previous[0][0];
+  const previousEnd = previous[previous.length - 1][0];
+
+  if (periodElement) {
+    periodElement.textContent = "Compared with the previous 7 recorded days";
+  }
+
   if (delta > 0) {
     element.textContent = `▲ Improved by ${delta} points`;
   } else if (delta < 0) {
     element.textContent = `▼ Down by ${Math.abs(delta)} points`;
   } else {
-    element.textContent = "No change from last week";
+    element.textContent = "No change from the previous period";
   }
 }
 
@@ -342,6 +482,18 @@ function updateHistoryTable(dailyStats) {
 
 function updatePersonalBaseline(dailyStats, today) {
   const baseline = calculatePersonalBaseline(dailyStats, today);
+  const baselineDaysUsed = document.getElementById("baselineDaysUsed");
+
+  const previousDays = Object.entries(dailyStats || {})
+    .filter(([date, stats]) => date < today && stats)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .slice(0, 7);
+
+  if (baselineDaysUsed) {
+    const count = previousDays.length;
+
+    baselineDaysUsed.textContent = `Based on ${count} previous recorded ${count === 1 ? "day" : "days"} (up to 7).`;
+  }
 
   const baselineValue = document.getElementById("baselineValue");
   const baselineToday = document.getElementById("baselineToday");
@@ -619,6 +771,8 @@ async function loadDashboard() {
 
     const dailyStats = storage.dailyStats || {};
 
+    window.currentDailyStats = dailyStats || {};
+
     const today = getToday();
 
     const stats = dailyStats[today];
@@ -755,3 +909,66 @@ ${new Date().toLocaleString()}
     }
   },
 );
+
+document.querySelectorAll(".graph-type-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    selectedGraphType = button.dataset.graph;
+    localStorage.setItem("focusPulseGraphType", selectedGraphType);
+
+    document.querySelectorAll(".graph-type-btn").forEach((btn) => {
+      btn.classList.toggle("is-active", btn === button);
+    });
+
+    // The graph type controls the trend strip's appearance.
+    renderTrend(
+      Object.entries(window.currentDailyStats || {})
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .slice(-selectedTrendRange)
+        .map(([date, stats]) => ({
+          date,
+          score: calculateFocusScore(stats),
+        })),
+    );
+  });
+});
+
+document.querySelectorAll(".trend-range-btn").forEach((button) => {
+  button.addEventListener("click", () => {
+    selectedTrendRange = Number(button.dataset.range);
+
+    document.querySelectorAll(".trend-range-btn").forEach((btn) => {
+      btn.classList.toggle("is-active", btn === button);
+    });
+
+    const trendDays = Object.entries(window.currentDailyStats || {})
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-selectedTrendRange)
+      .map(([date, stats]) => ({
+        date,
+        score: calculateFocusScore(stats),
+      }));
+
+    renderTrend(trendDays);
+
+    const label = document.getElementById("trendPeriodLabel");
+    if (label) {
+      label.textContent = `Last ${selectedTrendRange} days`;
+    }
+  });
+});
+
+// Restore the saved graph type when the dashboard opens.
+document.querySelectorAll(".graph-type-btn").forEach((button) => {
+  button.classList.toggle(
+    "is-active",
+    button.dataset.graph === selectedGraphType,
+  );
+});
+
+// Restore the default date-range selection.
+document.querySelectorAll(".trend-range-btn").forEach((button) => {
+  button.classList.toggle(
+    "is-active",
+    Number(button.dataset.range) === selectedTrendRange,
+  );
+});
